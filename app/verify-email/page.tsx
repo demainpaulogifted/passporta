@@ -1,105 +1,171 @@
 "use client";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 
-export default function VerifyEmail() {
+function VerifyEmailForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") ?? "";
+
   const [code, setCode] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
-  useEffect(() => {
-    setEmail(new URLSearchParams(window.location.search).get("email") || "");
-  }, []);
+  async function verifyEmail(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
 
-  async function verify(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setError("");
-    const s = createClient();
-    const { error } = await s.auth.verifyOtp({
-      email,
-      token: code.trim(),
-      type: "signup",
-    });
-    setBusy(false);
-    if (error) {
-      setError(error.message);
+    if (!email) {
+      setMessage("Your email address is missing. Please sign up again.");
       return;
     }
-    setNotice("Email verified successfully.");
-    router.push("/onboarding");
-    router.refresh();
+
+    if (!code.trim()) {
+      setMessage("Enter the verification code from your email.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const supabase = createClient();
+
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: code.trim(),
+        type: "signup",
+      });
+
+      if (error) {
+        setMessage(
+          "That code could not be verified. Check it and try again."
+        );
+        return;
+      }
+
+      router.replace("/onboarding");
+      router.refresh();
+    } catch {
+      setMessage("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  async function resend() {
-    setError("");
-    setNotice("");
-    const s = createClient();
-    const { error } = await s.auth.resend({
-      type: "signup",
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
-      },
-    });
-    if (error) setError(error.message);
-    else setNotice("A new verification email has been requested.");
+  async function resendCode() {
+    setMessage("");
+
+    if (!email) {
+      setMessage("Your email address is missing. Please sign up again.");
+      return;
+    }
+
+    setResending(true);
+
+    try {
+      const supabase = createClient();
+
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+      });
+
+      if (error) {
+        setMessage("We could not send a new code. Please try again shortly.");
+        return;
+      }
+
+      setMessage("A new verification code has been sent to your email.");
+    } catch {
+      setMessage("Unable to resend the code. Please try again.");
+    } finally {
+      setResending(false);
+    }
   }
 
   return (
     <main className="form-wrap">
       <section className="form-card">
-        <Link className="brand" href="/">
-          <span className="logo">P</span>PassPorta
+        <Link href="/" className="brand">
+          <span className="brand-mark">P</span>
+          <span>PassPorta</span>
         </Link>
+
         <h1>Verify your email</h1>
-        <p className="muted">
-          Enter the one-time code sent to <strong>{email || "your email"}</strong>.
-          Configure the Supabase Confirm signup email template to display the
-          token code.
+
+        <p className="form-description">
+          We sent a verification code to{" "}
+          <strong>{email || "your email address"}</strong>.
+          Enter the code below to secure your account and continue.
         </p>
-        {error && <div className="message error">{error}</div>}
-        {notice && <div className="message success">{notice}</div>}
-        <form onSubmit={verify}>
-          <div className="field">
-            <label>Verification code</label>
-            <input
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={8}
-              required
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="Enter email code"
-            />
-          </div>
+
+        <form onSubmit={verifyEmail} className="form">
+          <label htmlFor="verification-code">
+            Verification code
+          </label>
+
+          <input
+            id="verification-code"
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="Enter your email code"
+            value={code}
+            onChange={(event) =>
+              setCode(event.target.value.replace(/\s/g, ""))
+            }
+            maxLength={12}
+            required
+          />
+
+          {message && (
+            <p role="status" aria-live="polite" className="form-message">
+              {message}
+            </p>
+          )}
+
           <button
-            className="btn btn-primary full"
-            disabled={busy || !email}
+            type="submit"
+            className="button button-primary"
+            disabled={loading || !email}
           >
-            {busy ? "Verifying…" : "Verify email →"}
+            {loading ? "Verifying..." : "Verify email →"}
           </button>
         </form>
+
         <button
-          className="btn btn-outline full"
-          style={{ marginTop: 12 }}
-          onClick={resend}
-          disabled={!email}
+          type="button"
+          className="button button-secondary"
+          onClick={resendCode}
+          disabled={resending || !email}
         >
-          Resend code
+          {resending ? "Sending..." : "Resend code"}
         </button>
-        <p className="muted" style={{ marginTop: 18 }}>
-          Wrong email?{" "}
-          <Link className="small-link" href="/signup">
-            Sign up again
-          </Link>
+
+        <p className="form-footer">
+          Wrong email? <Link href="/signup">Sign up again</Link>
         </p>
       </section>
     </main>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="form-wrap">
+          <section className="form-card">
+            <p>Loading PassPorta verification...</p>
+          </section>
+        </main>
+      }
+    >
+      <VerifyEmailForm />
+    </Suspense>
   );
 }
