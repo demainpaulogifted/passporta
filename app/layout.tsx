@@ -1,5 +1,7 @@
+
 import type { Metadata } from "next";
 import "./globals.css";
+import SiteHeader from "@/components/site-header";
 
 export const metadata: Metadata = {
   title: "PassPorta — Your Passport Journey, Made Easier",
@@ -15,7 +17,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <SiteHeader />
+        <div className="site-content">{children}</div>
+      </body>
     </html>
   );
 }
