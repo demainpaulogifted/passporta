@@ -7,7 +7,6 @@ import { createClient } from "@/lib/supabase/client";
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("there");
-  const [mode, setMode] = useState("learn");
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
 
@@ -27,22 +26,17 @@ export default function Dashboard() {
         return;
       }
       setName(
-        String(
-          user.user_metadata?.full_name ||
-            user.email?.split("@")[0] ||
-            "there"
-        )
+        String(user.user_metadata?.full_name || user.email?.split("@")[0] || "there")
       );
       const { data: profile } = await s
         .from("profiles")
-        .select("preferred_mode,onboarding_completed")
+        .select("onboarding_completed")
         .eq("id", user.id)
         .maybeSingle();
       if (!profile?.onboarding_completed) {
         router.replace("/onboarding");
         return;
       }
-      setMode(profile.preferred_mode || "learn");
       const { data: role } = await s
         .from("user_roles")
         .select("role")
@@ -85,60 +79,59 @@ export default function Dashboard() {
           </div>
         </div>
       </header>
+
       <div className="container dash-layout">
         <aside className="sidebar">
-          <strong style={{ padding: "8px 12px" }}>Your workspace</strong>
+          <strong style={{ padding: "8px 12px" }}>Agent Workspace</strong>
           <a className="active" href="/dashboard">
             Dashboard
           </a>
-          <a href="/assistance">Assistance</a>
-          <a href="/course">Course</a>
-          {isAdmin && <a href="/admin">Admin dashboard</a>}
+          <a href="/course">Training</a>
+          <a href="/assistance">Support</a>
+          {isAdmin && <a href="/admin">Admin</a>}
         </aside>
+
         <section className="dash-main">
           <h1>Welcome back, {name.split(" ")[0]}</h1>
-          <p>Your passport journey starts with one clear next step.</p>
+          <p>Your journey to becoming a high-earning passport agent continues.</p>
+
           <div className="dash-grid">
             <article className="card">
-              <div className="card-icon">▤</div>
-              <h3>Learn the process</h3>
+              <div className="card-icon">📚</div>
+              <h3>Continue Training</h3>
               <p>
-                Explore the course and practical resources at your own pace.
-                Course checkout will be enabled after payment configuration.
+                Master the complete passport processing system and start taking clients.
               </p>
               <div style={{ marginTop: 20 }}>
                 <Link className="btn btn-blue" href="/course">
-                  Explore learning →
+                  Go to Training →
                 </Link>
               </div>
             </article>
+
             <article className="card">
-              <div
-                className="card-icon"
-                style={{ background: "#e7fff4", color: "var(--green)" }}
-              >
-                ↗
+              <div className="card-icon" style={{ background: "#e7fff4", color: "var(--green)" }}>
+                💬
               </div>
-              <h3>Need help with your application?</h3>
+              <h3>Need Help?</h3>
               <p>
-                Send a request and provide a way for our team to contact you.
+                Stuck on a client case? Send a request and get support from the team.
               </p>
               <div style={{ marginTop: 20 }}>
                 <Link className="btn btn-primary" href="/assistance">
-                  Request assistance →
+                  Request Support →
                 </Link>
               </div>
             </article>
           </div>
+
           <article className="card" style={{ marginTop: 18 }}>
-            <h3>Your chosen path</h3>
+            <h3>Your Agent Goal</h3>
             <p>
-              {mode === "assist"
-                ? "You selected assistance. You can submit a request or explore learning any time."
-                : "You selected learning. You can still request assistance whenever you need it."}
+              Learn the full process → Start processing passports → Charge ₦100k–150k per job.
             </p>
-            <Link className="small-link" href="/onboarding">
-              Change preferences
+            <Link className="small-link" href="/course">
+              View full training roadmap →
             </Link>
           </article>
         </section>
