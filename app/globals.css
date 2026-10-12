@@ -236,3 +236,213 @@ button,input,textarea,select{font:inherit}
   .steps{grid-template-columns:1fr}
   .form-card{padding:23px}
 }
+
+/* PassPorta expanded agent menu */
+.dashboard-nav {
+  position: relative;
+}
+
+.desktop-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-menu-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #dce5ef;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--navy);
+  cursor: pointer;
+}
+
+.agent-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(7, 28, 57, 0.58);
+}
+
+.agent-menu {
+  display: flex;
+  flex-direction: column;
+  width: min(390px, 92vw);
+  height: 100%;
+  overflow-y: auto;
+  padding: 22px;
+  background: #fff;
+  box-shadow: -12px 0 40px #071c3920;
+  animation: agentMenuSlide 0.22s ease-out;
+}
+
+@keyframes agentMenuSlide {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.agent-menu-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5ebf3;
+}
+
+.agent-menu-heading strong {
+  color: var(--navy);
+  font-size: 21px;
+}
+
+.agent-menu-heading p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.agent-menu-close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 11px;
+  background: #f2f6fa;
+  color: var(--navy);
+  cursor: pointer;
+}
+
+.agent-menu-links {
+  display: grid;
+  gap: 5px;
+  padding: 16px 0;
+}
+
+.agent-menu-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 10px;
+  border-radius: 12px;
+  color: var(--ink);
+  transition: background 0.15s ease;
+}
+
+.agent-menu-link:hover {
+  background: #f1f7fc;
+}
+
+.agent-menu-icon {
+  flex-shrink: 0;
+  color: #087f8c;
+}
+
+.agent-menu-copy {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+  min-width: 0;
+}
+
+.agent-menu-copy strong {
+  font-size: 14px;
+}
+
+.agent-menu-copy small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.agent-menu-lock {
+  flex-shrink: 0;
+  color: #8492a6;
+}
+
+.agent-menu-footer {
+  display: grid;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid #e5ebf3;
+}
+
+.agent-menu-home,
+.agent-menu-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.agent-menu-logout {
+  width: 100%;
+  border: 0;
+  background: #fff0ef;
+  color: #a72e28;
+  cursor: pointer;
+}
+
+.sidebar-title {
+  padding: 8px 12px;
+}
+
+.sidebar .sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.sidebar .sidebar-link span {
+  flex: 1;
+}
+
+.dashboard-welcome {
+  margin-bottom: 24px;
+}
+
+.dashboard-eyebrow {
+  color: #087f8c !important;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+
+.dashboard-card-action {
+  margin-top: 20px;
+}
+
+.dashboard-roadmap {
+  margin-top: 18px;
+}
+
+.dashboard-disclaimer {
+  margin-top: 18px !important;
+  padding-top: 14px;
+  border-top: 1px solid #e5ebf3;
+  font-size: 12px !important;
+}
+
+@media (max-width: 850px) {
+  .dashboard-menu-button {
+    display: inline-flex;
+  }
+
+  .desktop-actions {
+    display: none;
+  }
+}
