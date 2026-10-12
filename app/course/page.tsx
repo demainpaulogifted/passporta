@@ -2,15 +2,25 @@ import Link from "next/link";
 
 export default function CoursePage() {
   return (
-    <main className="form-wrap" style={{ alignItems: "flex-start", paddingTop: 40 }}>
+    <main
+      className="form-wrap"
+      style={{ alignItems: "flex-start", paddingTop: 40 }}
+    >
       <div className="form-card" style={{ maxWidth: 560 }}>
-        <Link className="brand" href="/" style={{ marginBottom: 24, display: "inline-flex" }}>
+        <Link
+          className="brand"
+          href="/"
+          style={{ marginBottom: 24, display: "inline-flex" }}
+        >
           <span className="logo">P</span>PassPorta
         </Link>
 
-        <h1 style={{ fontSize: 28, marginBottom: 8 }}>Passport Agent Training</h1>
+        <h1 style={{ fontSize: 28, marginBottom: 8 }}>
+          Passport Agent Training
+        </h1>
         <p className="muted">
-          A complete system to process international passports and earn as an agent.
+          A complete system to process international passports and earn as an
+          agent.
         </p>
 
         <div
@@ -24,10 +34,10 @@ export default function CoursePage() {
             lineHeight: 1.6,
           }}
         >
-          <strong>Course access is ₦5,000</strong>
+          <strong>Activation fee is ₦5,000</strong>
           <br />
-          One-time payment. Lifetime access. Paystack checkout will be enabled after
-          configuration.
+          One-time payment. Lifetime access. Paystack checkout will be enabled
+          after configuration.
         </div>
 
         <h3 style={{ margin: "28px 0 12px" }}>What you will learn</h3>
