@@ -1,7 +1,7 @@
 
 import type { Metadata } from "next";
 import "./globals.css";
-import SiteHeader from "@/components/site-header";
+import AppShell from "@/components/app-shell";
 
 export const metadata: Metadata = {
   title: "PassPorta — Your Passport Journey, Made Easier",
@@ -18,8 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <SiteHeader />
-        <div className="site-content">{children}</div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
