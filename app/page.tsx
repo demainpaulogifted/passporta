@@ -1,28 +1,28 @@
 import Link from "next/link";
 
-const services = [
+const benefits = [
   {
-    icon: "◎",
-    title: "Learn with confidence",
-    text: "Follow a structured, practical guide to understanding the Nigerian passport application process.",
+    icon: "💰",
+    title: "Earn ₦100k – ₦150k per job",
+    text: "Stop paying agents. Become the agent and charge premium rates for every passport you process.",
   },
   {
-    icon: "↗",
-    title: "Request assistance",
-    text: "Send a request to our team and get contacted about the support you need.",
+    icon: "📚",
+    title: "Complete step-by-step system",
+    text: "Learn the exact process, documents, portals, and scripts used by successful agents.",
   },
   {
-    icon: "✓",
-    title: "Know the next steps",
-    text: "Explore requirements, application stages and useful official resources in one place.",
+    icon: "🛡️",
+    title: "Lifetime support included",
+    text: "Get help whenever you get stuck with a client case. You’re never alone.",
   },
 ];
 
 const steps = [
-  ["01", "Create your account", "Sign up with your name, email and password."],
-  ["02", "Verify your email", "Enter the one-time code sent to your inbox."],
-  ["03", "Choose your path", "Explore the guide or request personal assistance."],
-  ["04", "Track your progress", "Return to your dashboard whenever you need."],
+  ["01", "Join the training", "Get instant access to the complete agent system."],
+  ["02", "Learn the process", "Master every step of international passport processing."],
+  ["03", "Start taking clients", "Use the scripts and templates to get your first jobs."],
+  ["04", "Scale your income", "Process multiple passports and grow your agency."],
 ];
 
 export default function Home() {
@@ -33,187 +33,95 @@ export default function Home() {
           <span className="logo">P</span>PassPorta
         </Link>
         <nav className="navlinks">
-          <a href="#services">Services</a>
+          <a href="#benefits">Benefits</a>
           <a href="#how-it-works">How it works</a>
-          <a href="#faq">FAQs</a>
+          <a href="#pricing">Pricing</a>
         </nav>
         <div style={{ display: "flex", gap: 10 }}>
           <Link className="btn btn-outline" href="/login">
             Log in
           </Link>
           <Link className="btn btn-primary" href="/signup">
-            Get started ↗
+            Start Earning →
           </Link>
         </div>
       </header>
+
       <main>
+        {/* Hero */}
         <section className="hero">
           <div className="container hero-grid">
             <div>
-              <div className="eyebrow">✦ PASSPORT GUIDANCE & SUPPORT</div>
+              <div className="eyebrow">✦ PASSPORT AGENT TRAINING</div>
               <h1>
-                Your passport journey,{" "}
-                <span className="gradient">made easier.</span>
+                Stop paying ₦100k–₦200k to agents.{" "}
+                <span className="gradient">Become one.</span>
               </h1>
               <p>
-                Understand the Nigerian passport application process with clear
-                guidance, practical learning resources, and optional assistance
-                when you need it.
+                Learn the exact system to process international passports and earn{" "}
+                <strong>₦100,000 – ₦150,000</strong> per job. Over 2 million Nigerians
+                travel every year — they all need passports.
               </p>
               <div className="actions">
                 <Link className="btn btn-primary" href="/signup">
-                  Start your journey <span>→</span>
+                  Become an Agent →
                 </Link>
-                <a
-                  className="btn"
-                  style={{ border: "1px solid #ffffff55", color: "white" }}
-                  href="#services"
-                >
-                  Explore services
+                <a className="btn" style={{ border: "1px solid #ffffff55", color: "white" }} href="#pricing">
+                  See Pricing
                 </a>
               </div>
               <div className="trustline">
-                <span>✓ Clear step-by-step guidance</span>
-                <span>✓ Secure personal account</span>
-                <span>✓ Learn at your own pace</span>
+                <span>✓ Complete training system</span>
+                <span>✓ Lifetime access</span>
+                <span>✓ Real support</span>
               </div>
             </div>
-            <div className="visual" aria-label="PassPorta passport illustration">
+
+            <div className="visual">
               <div className="glow"></div>
               <div className="passport-card">
                 <div className="small">FEDERAL REPUBLIC OF NIGERIA</div>
                 <div className="crest">✧</div>
                 <h3>PASSPORT</h3>
-                <div className="sub">GUIDANCE & SUPPORT</div>
+                <div className="sub">AGENT TRAINING</div>
               </div>
               <div className="float-note note-one">
-                ✓ Guidance in one place
-                <span>Understand each step</span>
+                ₦100k – ₦150k
+                <span>per passport job</span>
               </div>
               <div className="float-note note-two">
-                ✦ Your journey
-                <span>Learn or request assistance</span>
+                500 slots only
+                <span>Limited access</span>
               </div>
             </div>
           </div>
         </section>
-        <section className="section" id="services">
+
+        {/* Benefits */}
+        <section className="section" id="benefits">
           <div className="container">
             <div className="section-heading">
-              <h2>Support for every step of the journey</h2>
-              <p>
-                Whether you want to understand the process yourself or need
-                someone to guide you, start with the option that fits you.
-              </p>
+              <h2>Why become a passport agent?</h2>
+              <p>Turn a high-demand service into a real income stream.</p>
             </div>
             <div className="cards">
-              {services.map((s) => (
-                <article className="card" key={s.title}>
-                  <div className="card-icon">{s.icon}</div>
-                  <h3>{s.title}</h3>
-                  <p>{s.text}</p>
+              {benefits.map((b) => (
+                <article className="card" key={b.title}>
+                  <div className="card-icon">{b.icon}</div>
+                  <h3>{b.title}</h3>
+                  <p>{b.text}</p>
                 </article>
               ))}
             </div>
           </div>
         </section>
-        <section className="section section-soft">
-          <div className="container split">
-            <div>
-              <div
-                className="eyebrow"
-                style={{
-                  background: "#e1fff3",
-                  borderColor: "#c3f1df",
-                  color: "#087854",
-                }}
-              >
-                BUILT AROUND YOUR NEEDS
-              </div>
-              <h2
-                style={{
-                  fontSize: 38,
-                  letterSpacing: "-1.4px",
-                  color: "var(--navy)",
-                }}
-              >
-                A clearer path starts with the right information.
-              </h2>
-              <p style={{ color: "var(--muted)", lineHeight: 1.8 }}>
-                Passporta helps you organize your next steps with learning
-                resources and a simple way to request guidance. Keep your
-                progress together in your own account.
-              </p>
-              <div className="checklist">
-                <div className="check">
-                  <b>✓</b>
-                  <span>
-                    <strong>Practical learning</strong>
-                    <br />
-                    Understand application steps and prepare more confidently.
-                  </span>
-                </div>
-                <div className="check">
-                  <b>✓</b>
-                  <span>
-                    <strong>Personal assistance requests</strong>
-                    <br />
-                    Tell us what help you need so our team can follow up.
-                  </span>
-                </div>
-                <div className="check">
-                  <b>✓</b>
-                  <span>
-                    <strong>Progress saved to your account</strong>
-                    <br />
-                    Return when convenient and continue where you stopped.
-                  </span>
-                </div>
-              </div>
-              <Link className="btn btn-blue" href="/signup">
-                Create your account →
-              </Link>
-            </div>
-            <div className="info-panel">
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 800,
-                  color: "var(--green)",
-                  marginBottom: 12,
-                }}
-              >
-                IMPORTANT TO KNOW
-              </div>
-              <h3>
-                Guidance you can understand. Official decisions stay with the
-                authorities.
-              </h3>
-              <p style={{ color: "var(--muted)", lineHeight: 1.8 }}>
-                PassPorta is an independent guidance and assistance platform, not
-                the Nigerian Immigration Service. Applications, official fees,
-                appointments, biometric capture and approval remain subject to
-                official government procedures.
-              </p>
-              <a
-                className="small-link"
-                href="https://passport.immigration.gov.ng/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Visit the official passport portal ↗
-              </a>
-            </div>
-          </div>
-        </section>
-        <section className="section" id="how-it-works">
+
+        {/* How it works */}
+        <section className="section section-soft" id="how-it-works">
           <div className="container">
             <div className="section-heading">
-              <h2>Get started in four simple steps</h2>
-              <p>
-                A straightforward process that helps you move from questions to a
-                clear next step.
-              </p>
+              <h2>How it works</h2>
+              <p>From zero knowledge to processing passports for clients.</p>
             </div>
             <div className="steps">
               {steps.map((s) => (
@@ -226,70 +134,72 @@ export default function Home() {
             </div>
           </div>
         </section>
-        <section className="section section-soft" id="faq">
+
+        {/* Pricing */}
+        <section className="section" id="pricing">
           <div className="container">
             <div className="section-heading">
-              <h2>Frequently asked questions</h2>
-              <p>Know what to expect before you begin.</p>
+              <h2>One-time payment. Lifetime access.</h2>
+              <p>No monthly fees. Own the system forever.</p>
             </div>
-            <div className="faq">
-              **Summary:**
-Is PassPorta a government website?
-                <p>
-                  No. PassPorta is an independent guidance and assistance platform
-                  and is not affiliated with or endorsed by the Nigerian
-                  Immigration Service.
-                </p>
-              **Summary:**
-Can PassPorta guarantee passport approval?
-                <p>
-                  No. Only the relevant authorities can decide an application. We
-                  provide information and assistance, not guaranteed approvals or
-                  shortcuts.
-                </p>
-              **Summary:**
 
-                  Do I have to buy the course to request assistance?
-                
-                <p>
-                  These are separate options. The assistance request form is
-                  intended to let you describe the support you need; course access
-                  may have a separate fee shown before payment.
-                </p>
-              **Summary:**
-Where do I pay official passport fees?
-                <p>
-                  Always confirm official requirements and fees through the
-                  Nigerian Immigration Service and its official passport portal.
-                </p>
+            <div style={{ maxWidth: 480, margin: "0 auto" }}>
+              <div className="card" style={{ padding: 32, textAlign: "center" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--green)", marginBottom: 8 }}>
+                  FULL AGENT TRAINING
+                </div>
+                <div style={{ fontSize: 48, fontWeight: 800, color: "var(--navy)", letterSpacing: "-2px" }}>
+                  ₦5,000
+                </div>
+                <div style={{ color: "var(--muted)", marginBottom: 24 }}>One-time payment</div>
+
+                <ul style={{ textAlign: "left", listStyle: "none", padding: 0, margin: "0 0 28px" }}>
+                  {[
+                    "Complete step-by-step passport process",
+                    "How to charge ₦100k–150k per job",
+                    "Client scripts & templates",
+                    "Document checklists",
+                    "Lifetime access + future updates",
+                    "Support when you need it",
+                  ].map((item) => (
+                    <li key={item} style={{ display: "flex", gap: 10, marginBottom: 12, fontSize: 15 }}>
+                      <span style={{ color: "var(--green)" }}>✓</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
+                <Link className="btn btn-primary full" href="/signup">
+                  Get Instant Access →
+                </Link>
+              </div>
             </div>
           </div>
         </section>
+
+        {/* Final CTA */}
         <section className="section">
           <div className="container">
             <div className="cta">
               <div>
-                <h2>Ready to take the next step?</h2>
-                <p>
-                  Create your account and choose the support that works for you.
-                </p>
+                <h2>Ready to start earning?</h2>
+                <p>Join the limited slots and become a passport agent today.</p>
               </div>
               <Link className="btn btn-primary" href="/signup">
-                Get started with PassPorta →
+                Become an Agent →
               </Link>
             </div>
           </div>
         </section>
       </main>
+
       <footer className="footer">
         <div className="container footer-row">
           <div>
             <strong style={{ color: "white" }}>PassPorta</strong>
-            <div style={{ marginTop: 8 }}>
-              Your passport journey, made easier.
-            </div>
+            <div style={{ marginTop: 8 }}>Become a passport agent. Earn real income.</div>
           </div>
-          <div>Independent guidance platform · Not a government agency</div>
+          <div>Independent training platform · Not affiliated with NIS</div>
           <div>© {new Date().getFullYear()} PassPorta</div>
         </div>
       </footer>
