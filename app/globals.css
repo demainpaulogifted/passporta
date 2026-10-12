@@ -689,3 +689,18 @@ button,input,textarea,select{font:inherit}
     padding: 18px;
   }
 }
+
+/* The shared header replaces the old homepage and dashboard headers */
+.site-content > header.container.nav {
+  display: none;
+}
+
+.site-content .dash-head {
+  display: none;
+}
+
+/* Keep the dashboard content spacing comfortable */
+.site-content .dash-layout {
+  padding-top: 28px;
+}
+
