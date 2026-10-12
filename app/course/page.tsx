@@ -1,45 +1,51 @@
 import Link from "next/link";
 
-export default function Course() {
+export default function CoursePage() {
   return (
-    <main className="form-wrap">
-      <section className="form-card" style={{ width: "min(620px,100%)" }}>
-        <Link className="brand" href="/dashboard">
+    <main className="form-wrap" style={{ alignItems: "flex-start", paddingTop: 40 }}>
+      <div className="form-card" style={{ maxWidth: 560 }}>
+        <Link className="brand" href="/" style={{ marginBottom: 24, display: "inline-flex" }}>
           <span className="logo">P</span>PassPorta
         </Link>
-        <h1>Passport application guide</h1>
+
+        <h1 style={{ fontSize: 28, marginBottom: 8 }}>Passport Agent Training</h1>
         <p className="muted">
-          A structured learning path is planned for this course. This starter
-          page does not claim that lessons or payments are live yet.
+          A complete system to process international passports and earn as an agent.
         </p>
-        <div className="message">
-          Course access is planned at ₦5,000. Paystack checkout must be
-          configured and verified server-side before paid access is enabled.
+
+        <div
+          style={{
+            background: "#eef9f4",
+            border: "1px solid #c8ecdc",
+            borderRadius: 14,
+            padding: 18,
+            margin: "24px 0",
+            fontSize: 15,
+            lineHeight: 1.6,
+          }}
+        >
+          <strong>Course access is ₦5,000</strong>
+          <br />
+          One-time payment. Lifetime access. Paystack checkout will be enabled after
+          configuration.
         </div>
-        <div className="card">
-          <h3>What the guide will cover</h3>
-          <p>
-            Understanding official requirements, preparing documents, navigating
-            the official portal, appointment and biometric steps, and recognizing
-            common mistakes.
-          </p>
+
+        <h3 style={{ margin: "28px 0 12px" }}>What you will learn</h3>
+        <ul style={{ paddingLeft: 18, color: "var(--muted)", lineHeight: 1.8 }}>
+          <li>Full international passport requirements</li>
+          <li>How to guide clients step-by-step</li>
+          <li>Document preparation & common mistakes</li>
+          <li>How to charge ₦100k – ₦150k per job</li>
+          <li>Client handling scripts & templates</li>
+          <li>How to scale into a real agency</li>
+        </ul>
+
+        <div style={{ marginTop: 32 }}>
+          <Link className="btn btn-primary full" href="/dashboard">
+            Back to Dashboard
+          </Link>
         </div>
-        <p className="muted" style={{ marginTop: 20 }}>
-          Always verify current requirements on the{" "}
-          <a
-            className="small-link"
-            href="https://passport.immigration.gov.ng/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            official passport portal
-          </a>
-          .
-        </p>
-        <Link className="btn btn-outline full" href="/dashboard">
-          Back to dashboard
-        </Link>
-      </section>
+      </div>
     </main>
   );
 }
