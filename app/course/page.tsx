@@ -1,8 +1,7 @@
-
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -45,9 +44,10 @@ const lessons = [
   },
 ];
 
-export default function CoursePage() {
+function CourseContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [loading, setLoading] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
@@ -57,13 +57,16 @@ export default function CoursePage() {
 
   const loadCourse = useCallback(async () => {
     const supabase = createClient();
+
     const {
       data: { user },
+      error: authError,
     } = await supabase.auth.getUser();
 
-    if (!user) {
+    if (authError || !user) {
       setSignedIn(false);
       setHasAccess(false);
+      setCompleted([]);
       setLoading(false);
       return;
     }
@@ -85,13 +88,19 @@ export default function CoursePage() {
     setHasAccess(Boolean(access));
 
     if (access) {
-      const { data: progress } = await supabase
+      const { data: progress, error: progressError } = await supabase
         .from("course_progress")
         .select("lesson_id")
         .eq("user_id", user.id)
         .eq("completed", true);
 
-      setCompleted((progress || []).map((row) => row.lesson_id));
+      if (progressError) {
+        setMessage("Course loaded, but progress could not be retrieved.");
+      } else {
+        setCompleted((progress || []).map((row) => row.lesson_id));
+      }
+    } else {
+      setCompleted([]);
     }
 
     setLoading(false);
@@ -132,15 +141,20 @@ export default function CoursePage() {
         }
 
         setMessage("Payment verified. Your lifetime access is active!");
-        setHasAccess(true);
-        router.replace("/course");
+
         await loadCourse();
+
+        if (!cancelled) {
+          router.replace("/course");
+        }
       } catch {
         if (!cancelled) {
           setMessage("Verification failed temporarily. Please try again.");
         }
       } finally {
-        if (!cancelled) setBusy(false);
+        if (!cancelled) {
+          setBusy(false);
+        }
       }
     }
 
@@ -159,11 +173,13 @@ export default function CoursePage() {
       const response = await fetch("/api/course/initialize", {
         method: "POST",
       });
+
       const result = await response.json();
 
       if (result.alreadyEnrolled) {
         setHasAccess(true);
-        setMessage(result.message);
+        setMessage(result.message || "You already have course access.");
+        await loadCourse();
         return;
       }
 
@@ -186,7 +202,9 @@ export default function CoursePage() {
 
     setMessage("");
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) {
       setMessage("Please sign in to save your progress.");
@@ -210,7 +228,7 @@ export default function CoursePage() {
 
     setCompleted((previous) =>
       nextCompleted
-        ? [...previous, lessonId]
+        ? [...previous.filter((id) => id !== lessonId), lessonId]
         : previous.filter((id) => id !== lessonId)
     );
   }
@@ -224,7 +242,10 @@ export default function CoursePage() {
   }
 
   return (
-    <main className="form-wrap" style={{ alignItems: "flex-start", paddingTop: 40 }}>
+    <main
+      className="form-wrap"
+      style={{ alignItems: "flex-start", paddingTop: 40 }}
+    >
       <div className="form-card" style={{ maxWidth: 720 }}>
         <Link
           className="brand"
@@ -235,7 +256,9 @@ export default function CoursePage() {
         </Link>
 
         <p className="muted">PASSPORT AGENT LEARNING PROGRAMME</p>
+
         <h1>Passport Agent Training</h1>
+
         <p className="muted">
           Learn to guide applicants responsibly, understand official
           requirements, prepare document checklists and build a transparent
@@ -260,7 +283,7 @@ export default function CoursePage() {
         </div>
 
         {message && (
-          <div className="message" role="status">
+          <div className="message" role="status" aria-live="polite">
             {message}
           </div>
         )}
@@ -268,6 +291,7 @@ export default function CoursePage() {
         {!hasAccess ? (
           <>
             <h2>What you will learn</h2>
+
             <ul style={{ color: "var(--muted)", lineHeight: 1.9 }}>
               <li>Understanding official passport procedures</li>
               <li>Checking current requirements and preparing documents</li>
@@ -295,11 +319,19 @@ export default function CoursePage() {
         ) : (
           <>
             <h2>Your training lessons</h2>
+
             <p className="muted">
               Completed {completed.length} of {lessons.length} lessons.
             </p>
 
-            <div className="progress">
+            <div
+              className="progress"
+              role="progressbar"
+              aria-label="Course progress"
+              aria-valuemin={0}
+              aria-valuemax={lessons.length}
+              aria-valuenow={completed.length}
+            >
               <span
                 style={{
                   width: `${(completed.length / lessons.length) * 100}%`,
@@ -314,9 +346,11 @@ export default function CoursePage() {
                 style={{ margin: "16px 0" }}
               >
                 <h3>{lesson.title}</h3>
+
                 <p style={{ lineHeight: 1.8, color: "var(--muted)" }}>
                   {lesson.content}
                 </p>
+
                 <label
                   style={{
                     display: "flex",
@@ -362,5 +396,19 @@ export default function CoursePage() {
         </Link>
       </div>
     </main>
+  );
+}
+
+export default function CoursePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="form-wrap">
+          <div className="form-card">Loading your course…</div>
+        </main>
+      }
+    >
+      <CourseContent />
+    </Suspense>
   );
 }
