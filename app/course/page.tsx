@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { course } from "@/lib/course-data";
 import { createClient } from "@/lib/supabase/client";
 
-export default function CoursePage() {
+function CourseContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [paying, setPaying] = useState(false);
@@ -16,37 +17,65 @@ export default function CoursePage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // Check if user already has lifetime access
+  // Check whether the signed-in user already has course access.
   useEffect(() => {
+    let cancelled = false;
+
     async function checkAccess() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const supabase = createClient();
 
-      if (!user) {
-        router.replace("/login");
-        return;
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
+
+        if (authError) {
+          throw authError;
+        }
+
+        if (!user) {
+          router.replace("/login");
+          return;
+        }
+
+        const { data, error: accessError } = await supabase
+          .from("course_access")
+          .select("user_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (accessError) {
+          throw accessError;
+        }
+
+        if (!cancelled) {
+          setHasAccess(Boolean(data));
+          setLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setError("Unable to check your course access. Please refresh and try again.");
+          setLoading(false);
+        }
       }
-
-      const { data } = await supabase
-        .from("course_access")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      setHasAccess(Boolean(data));
-      setLoading(false);
     }
 
     checkAccess();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
-  // Auto-verify payment when user returns from Paystack
+  // Verify a Paystack payment when the customer returns to this page.
   useEffect(() => {
-    const reference = searchParams.get("reference") || searchParams.get("trxref");
+    const reference =
+      searchParams.get("reference") || searchParams.get("trxref");
 
     if (!reference || hasAccess) return;
+
+    let cancelled = false;
 
     async function verifyPayment() {
       setVerifying(true);
@@ -63,23 +92,34 @@ export default function CoursePage() {
         const data = await res.json();
 
         if (!res.ok) {
-          setError(data.error || "Could not verify payment.");
-          setVerifying(false);
-          return;
+          throw new Error(data.error || "Could not verify payment.");
         }
 
-        setHasAccess(true);
-        setMessage("Payment successful! Your lifetime access is now active.");
-        // Clean the URL
-        router.replace("/course");
-      } catch {
-        setError("Verification failed. Please try again or contact support.");
+        if (!cancelled) {
+          setHasAccess(true);
+          setMessage("Payment successful! Your lifetime access is now active.");
+          router.replace("/course");
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Verification failed. Please try again or contact support."
+          );
+        }
       } finally {
-        setVerifying(false);
+        if (!cancelled) {
+          setVerifying(false);
+        }
       }
     }
 
     verifyPayment();
+
+    return () => {
+      cancelled = true;
+    };
   }, [searchParams, hasAccess, router]);
 
   async function startPayment() {
@@ -95,27 +135,27 @@ export default function CoursePage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Could not start payment.");
-        setPaying(false);
-        return;
+        throw new Error(data.error || "Could not start payment.");
       }
 
       if (data.alreadyEnrolled) {
         setHasAccess(true);
         setMessage("Your lifetime access is already active.");
-        setPaying(false);
         return;
       }
 
       if (data.authorizationUrl) {
-        // Redirect to Paystack
         window.location.href = data.authorizationUrl;
         return;
       }
 
-      setError("Unexpected response from payment server.");
-    } catch {
-      setError("Unable to start payment. Please try again.");
+      throw new Error("Unexpected response from payment server.");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to start payment. Please try again."
+      );
     } finally {
       setPaying(false);
     }
@@ -131,19 +171,30 @@ export default function CoursePage() {
 
   return (
     <main className="dashboard">
-      <div className="container" style={{ paddingTop: 28, paddingBottom: 60 }}>
-        {/* Header */}
+      <div
+        className="container"
+        style={{ paddingTop: 28, paddingBottom: 60 }}
+      >
         <div style={{ marginBottom: 28 }}>
           <p className="dashboard-eyebrow">PASSPORT AGENT TRAINING</p>
+
           <h1 style={{ fontSize: 26, marginBottom: 8, lineHeight: 1.25 }}>
             {course.title}
           </h1>
-          <p style={{ color: "var(--muted)", maxWidth: 520, lineHeight: 1.6, margin: 0 }}>
+
+          <p
+            style={{
+              color: "var(--muted)",
+              maxWidth: 520,
+              lineHeight: 1.6,
+              margin: 0,
+            }}
+          >
             {course.subtitle}
           </p>
         </div>
 
-        {/* Access / Payment Card */}
+        {/* Access and payment card */}
         <div
           className="card"
           style={{
@@ -151,7 +202,9 @@ export default function CoursePage() {
             background: hasAccess
               ? "linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%)"
               : "linear-gradient(135deg, #f0fdf6 0%, #eef6ff 100%)",
-            border: hasAccess ? "1px solid #86efac" : "1px solid #c6e9d8",
+            border: hasAccess
+              ? "1px solid #86efac"
+              : "1px solid #c6e9d8",
           }}
         >
           {hasAccess ? (
@@ -166,10 +219,18 @@ export default function CoursePage() {
               >
                 LIFETIME ACCESS ACTIVE
               </div>
+
               <h3 style={{ margin: "0 0 6px", fontSize: 18 }}>
                 You have full access to the course
               </h3>
-              <p style={{ margin: 0, color: "var(--muted)", fontSize: 14 }}>
+
+              <p
+                style={{
+                  margin: 0,
+                  color: "var(--muted)",
+                  fontSize: 14,
+                }}
+              >
                 All 6 lessons and the complete toolkit are unlocked for you.
               </p>
             </div>
@@ -194,10 +255,18 @@ export default function CoursePage() {
                 >
                   FULL ACCESS
                 </div>
+
                 <h3 style={{ margin: "0 0 4px", fontSize: 20 }}>
                   ₦{course.price.toLocaleString()} — One-time
                 </h3>
-                <p style={{ margin: 0, color: "var(--muted)", fontSize: 14 }}>
+
+                <p
+                  style={{
+                    margin: 0,
+                    color: "var(--muted)",
+                    fontSize: 14,
+                  }}
+                >
                   Lifetime access to all 6 lessons + complete toolkit
                 </p>
               </div>
@@ -207,25 +276,49 @@ export default function CoursePage() {
                 onClick={startPayment}
                 disabled={paying || verifying}
               >
-                {paying ? "Starting payment..." : verifying ? "Verifying..." : "Pay ₦5,000 →"}
+                {paying
+                  ? "Starting payment..."
+                  : verifying
+                    ? "Verifying..."
+                    : `Pay ₦${course.price.toLocaleString()} →`}
               </button>
             </div>
           )}
 
           {message && (
-            <p style={{ margin: "14px 0 0", color: "var(--green)", fontSize: 14 }}>
+            <p
+              style={{
+                margin: "14px 0 0",
+                color: "var(--green)",
+                fontSize: 14,
+              }}
+            >
               {message}
             </p>
           )}
+
           {error && (
-            <p style={{ margin: "14px 0 0", color: "#c0392b", fontSize: 14 }}>
+            <p
+              role="alert"
+              style={{
+                margin: "14px 0 0",
+                color: "#c0392b",
+                fontSize: 14,
+              }}
+            >
               {error}
             </p>
           )}
         </div>
 
-        {/* Curriculum */}
-        <h2 style={{ fontSize: 18, marginBottom: 14, color: "var(--navy)" }}>
+        {/* Course curriculum */}
+        <h2
+          style={{
+            fontSize: 18,
+            marginBottom: 14,
+            color: "var(--navy)",
+          }}
+        >
           Course Curriculum
         </h2>
 
@@ -234,9 +327,9 @@ export default function CoursePage() {
             <Link
               key={lesson.id}
               href={hasAccess ? `/course/${lesson.id}` : "#"}
-              onClick={(e) => {
+              onClick={(event) => {
                 if (!hasAccess) {
-                  e.preventDefault();
+                  event.preventDefault();
                   setError("Please unlock the course first to access lessons.");
                 }
               }}
@@ -279,10 +372,12 @@ export default function CoursePage() {
                   <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>
                     {lesson.title}
                   </h3>
+
                   <span style={{ fontSize: 12, color: "var(--muted)" }}>
                     {hasAccess ? lesson.duration : "Locked"}
                   </span>
                 </div>
+
                 <p
                   style={{
                     margin: 0,
@@ -298,9 +393,12 @@ export default function CoursePage() {
           ))}
         </div>
 
-        {/* What is included */}
+        {/* Course inclusions */}
         <div className="card" style={{ marginBottom: 28 }}>
-          <h3 style={{ margin: "0 0 12px", fontSize: 16 }}>What is included</h3>
+          <h3 style={{ margin: "0 0 12px", fontSize: 16 }}>
+            What is included
+          </h3>
+
           <ul
             style={{
               margin: 0,
@@ -320,12 +418,33 @@ export default function CoursePage() {
           </ul>
         </div>
 
-        <p style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.6, margin: 0 }}>
-          PassPorta is an independent training platform and is not affiliated with the
-          Nigeria Immigration Service. Official fees and decisions remain under the
-          control of the relevant authorities.
+        <p
+          style={{
+            fontSize: 13,
+            color: "var(--muted)",
+            lineHeight: 1.6,
+            margin: 0,
+          }}
+        >
+          PassPorta is an independent training platform and is not affiliated
+          with the Nigeria Immigration Service. Official fees and decisions
+          remain under the control of the relevant authorities.
         </p>
       </div>
     </main>
+  );
+}
+
+export default function CoursePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="form-wrap">
+          <div className="form-card">Loading course…</div>
+        </main>
+      }
+    >
+      <CourseContent />
+    </Suspense>
   );
 }
