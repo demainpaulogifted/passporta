@@ -66,14 +66,16 @@ export default function CoursePage() {
 
         <div style={{ display: "grid", gap: 10, marginBottom: 32 }}>
           {course.lessons.map((lesson) => (
-            <article
+            <Link
               key={lesson.id}
+              href={`/course/${lesson.id}`}
               className="card"
               style={{
                 display: "flex",
                 gap: 14,
                 alignItems: "flex-start",
                 padding: "16px 18px",
+                textDecoration: "none",
               }}
             >
               <div
@@ -126,7 +128,7 @@ export default function CoursePage() {
                   {lesson.goal}
                 </p>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
 
