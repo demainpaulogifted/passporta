@@ -529,15 +529,15 @@ button, input, textarea, select {
   line-height: 1.6;
 }
 
-/* ===== FIXED HEADER + HAMBURGER MENU ===== */
+/* ===== FIXED HEADER + TIGHT HAMBURGER MENU ===== */
 .site-header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 70px;
+  height: 64px;
   background: white;
-  border-bottom: 1px solid #e5eaf0;
+  border-bottom: 1px solid #e8eef5;
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -554,10 +554,10 @@ button, input, textarea, select {
 }
 
 .site-header-toggle {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border: 1px solid #dce5ef;
-  border-radius: 12px;
+  border-radius: 10px;
   background: white;
   display: flex;
   align-items: center;
@@ -566,30 +566,30 @@ button, input, textarea, select {
 }
 
 .site-content {
-  padding-top: 70px;
+  padding-top: 64px;
   min-height: 100vh;
 }
 
 .site-menu-overlay {
   position: fixed;
-  top: 70px;
+  top: 64px;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(7, 28, 57, 0.45);
   z-index: 999;
   display: flex;
   justify-content: flex-end;
 }
 
 .site-menu-panel {
-  width: 85%;
-  max-width: 340px;
+  width: 82%;
+  max-width: 310px;
   height: 100%;
   background: white;
-  padding: 20px;
+  padding: 16px 14px;
   overflow-y: auto;
-  box-shadow: -8px 0 30px rgba(0,0,0,0.15);
+  box-shadow: -8px 0 28px rgba(0,0,0,0.12);
   display: flex;
   flex-direction: column;
 }
@@ -598,27 +598,27 @@ button, input, textarea, select {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #edf1f6;
 }
 
 .site-menu-heading strong {
-  font-size: 18px;
+  font-size: 16px;
   color: #071c39;
 }
 
 .site-menu-heading p {
-  margin: 4px 0 0;
-  font-size: 13px;
+  margin: 3px 0 0;
+  font-size: 12px;
   color: #61708a;
 }
 
 .site-menu-close {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border: 1px solid #e0e7ef;
-  border-radius: 10px;
+  border-radius: 8px;
   background: white;
   display: flex;
   align-items: center;
@@ -629,16 +629,16 @@ button, input, textarea, select {
 .site-menu-links {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
 }
 
 .site-menu-link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 10px;
-  border-radius: 12px;
+  gap: 10px;
+  padding: 9px 8px;
+  border-radius: 10px;
   color: #13233d;
 }
 
@@ -654,54 +654,39 @@ button, input, textarea, select {
 .site-menu-copy {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   flex: 1;
 }
 
 .site-menu-copy strong {
-  font-size: 14px;
+  font-size: 13.5px;
+  font-weight: 700;
 }
 
 .site-menu-copy small {
-  font-size: 12px;
+  font-size: 11.5px;
   color: #61708a;
 }
 
-.site-menu-lock {
-  color: #8492a6;
-}
-
 .site-menu-footer {
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.site-menu-account {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px;
-  border-radius: 10px;
-  font-weight: 600;
-  color: #071c39;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #edf1f6;
 }
 
 .logout-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px;
+  gap: 7px;
+  width: 100%;
+  padding: 11px;
   border-radius: 10px;
   background: #fff0ef;
   color: #c0392b;
   border: none;
   font-weight: 700;
+  font-size: 14px;
   cursor: pointer;
 }
 
