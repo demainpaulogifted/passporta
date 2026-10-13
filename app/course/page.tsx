@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -10,37 +11,37 @@ const lessons = [
     id: "lesson-1",
     title: "1. Understanding the Nigerian passport process",
     content:
-      "Learn the difference between guidance and official processing. Direct applicants to the Nigerian Immigration Service's official passport portal. Explain that the NIS determines eligibility, requirements, appointments and approval. Never claim to be an NIS officer or promise approval.",
+      "Learn the difference between independent guidance and official passport processing. Understand the applicant's role, the role of the Nigerian Immigration Service (NIS), and the importance of directing applicants to official sources. Never claim to be an NIS officer or promise approval.",
   },
   {
     id: "lesson-2",
     title: "2. Finding and checking official requirements",
     content:
-      "Start with the official NIS passport guidance at https://immigration.gov.ng/passports/ and the official application portal at https://passport.immigration.gov.ng/. Requirements can change, so check official guidance before advising each applicant. Explain the requirements in plain language and direct applicants to the official source for confirmation.",
+      "Start with https://immigration.gov.ng/passports/ and the official application portal at https://passport.immigration.gov.ng/. Check the current instructions for the applicant's specific application type. Requirements can change, so confirm details against official guidance before advising a client.",
   },
   {
     id: "lesson-3",
     title: "3. Helping clients prepare documents",
     content:
-      "Give clients a written checklist based on the current official requirements for their application type. Ask them to check spelling, dates of birth and consistency across their documents. Do not alter documents, fabricate information, retain passwords, or request unnecessary sensitive information.",
+      "Prepare a written checklist based on current official requirements. Help clients check spelling, dates of birth, and consistency across documents. Do not alter documents, fabricate information, retain account passwords, or collect unnecessary sensitive information.",
   },
   {
     id: "lesson-4",
     title: "4. Supporting an application responsibly",
     content:
-      "Help clients understand the steps and navigate official instructions while the applicant remains in control of their account and declarations. The applicant should review all details personally before submission. Do not impersonate an applicant or claim you can influence an official decision.",
+      "Explain the official application steps and help clients understand instructions while the applicant remains in control of their account and declarations. The applicant must review their details personally. Never impersonate an applicant or claim you can influence an official decision.",
   },
   {
     id: "lesson-5",
     title: "5. Client communication and service fees",
     content:
-      "Agree on your service scope and fee in writing before starting. Separate your own assistance fee from official government charges. Provide receipts, explain what is included, protect client information and never guarantee a passport, appointment, approval date or income.",
+      "Agree on your service scope and fee in writing before starting. Separate your assistance fee from official government charges. Explain what is included, provide receipts, protect client information, and never guarantee a passport, appointment, approval date, or income.",
   },
   {
     id: "lesson-6",
     title: "6. Building a trustworthy service",
     content:
-      "Use clear terms, secure records, written consent and a simple follow-up system. Do not advertise yourself as an immigration official unless legally authorized. Build trust through accurate information and transparent pricing, not promises of guaranteed earnings.",
+      "Use clear terms, secure records, written consent, and a reliable follow-up system. Do not advertise yourself as an immigration official unless legally authorized. Build trust through accurate information and transparent pricing, not promises of guaranteed earnings.",
   },
 ];
 
@@ -85,9 +86,10 @@ function CourseContent() {
       return;
     }
 
-    setHasAccess(Boolean(access));
+    const accessGranted = Boolean(access);
+    setHasAccess(accessGranted);
 
-    if (access) {
+    if (accessGranted) {
       const { data: progress, error: progressError } = await supabase
         .from("course_progress")
         .select("lesson_id")
@@ -95,7 +97,7 @@ function CourseContent() {
         .eq("completed", true);
 
       if (progressError) {
-        setMessage("Course loaded, but progress could not be retrieved.");
+        setMessage("Course access is active, but progress could not be loaded.");
       } else {
         setCompleted((progress || []).map((row) => row.lesson_id));
       }
@@ -135,18 +137,20 @@ function CourseContent() {
         if (!response.ok || !result.success) {
           setMessage(
             result.error ||
-              "We could not verify this payment yet. You can try again."
+              "We could not verify this payment yet. Please try again."
           );
           return;
         }
 
-        setMessage("Payment verified. Your lifetime access is active!");
-
+        // Reload the entitlement from Supabase after server verification.
         await loadCourse();
 
-        if (!cancelled) {
-          router.replace("/course");
-        }
+        if (cancelled) return;
+
+        setMessage("Payment verified. Your lifetime access is active!");
+
+        // Remove the payment reference from the URL after verification.
+        router.replace("/course");
       } catch {
         if (!cancelled) {
           setMessage("Verification failed temporarily. Please try again.");
@@ -177,9 +181,8 @@ function CourseContent() {
       const result = await response.json();
 
       if (result.alreadyEnrolled) {
-        setHasAccess(true);
-        setMessage(result.message || "You already have course access.");
         await loadCourse();
+        setMessage(result.message || "Your course access is already active.");
         return;
       }
 
@@ -197,6 +200,11 @@ function CourseContent() {
   }
 
   async function toggleLesson(lessonId: string) {
+    if (!hasAccess) {
+      setMessage("Lifetime course access is required to save lesson progress.");
+      return;
+    }
+
     const supabase = createClient();
     const nextCompleted = !completed.includes(lessonId);
 
@@ -204,9 +212,10 @@ function CourseContent() {
 
     const {
       data: { user },
+      error: authError,
     } = await supabase.auth.getUser();
 
-    if (!user) {
+    if (authError || !user) {
       setMessage("Please sign in to save your progress.");
       return;
     }
@@ -261,26 +270,48 @@ function CourseContent() {
 
         <p className="muted">
           Learn to guide applicants responsibly, understand official
-          requirements, prepare document checklists and build a transparent
+          requirements, prepare document checklists, and build a transparent
           client service.
         </p>
 
-        <div
-          style={{
-            background: "#eef9f4",
-            border: "1px solid #c8ecdc",
-            borderRadius: 14,
-            padding: 18,
-            margin: "24px 0",
-            lineHeight: 1.7,
-          }}
-        >
-          <strong>One-time fee: ₦5,000</strong>
-          <p style={{ margin: "6px 0 0" }}>
-            Pay once for lifetime access to the training materials included
-            with this course. No annual renewal fee.
-          </p>
-        </div>
+        {hasAccess ? (
+          <div
+            role="status"
+            style={{
+              background: "#eef9f4",
+              border: "1px solid #c8ecdc",
+              borderRadius: 14,
+              padding: 18,
+              margin: "24px 0",
+              lineHeight: 1.7,
+              color: "#145b42",
+            }}
+          >
+            <strong>Lifetime Access Active</strong>
+            <p style={{ margin: "6px 0 0" }}>
+              Your payment has been verified. You have lifetime access to the
+              training materials included with your purchase. You do not need
+              to pay again.
+            </p>
+          </div>
+        ) : (
+          <div
+            style={{
+              background: "#eef9f4",
+              border: "1px solid #c8ecdc",
+              borderRadius: 14,
+              padding: 18,
+              margin: "24px 0",
+              lineHeight: 1.7,
+            }}
+          >
+            <strong>One-time fee: ₦5,000</strong>
+            <p style={{ margin: "6px 0 0" }}>
+              Pay once for lifetime access to the training materials included
+              with this course. No annual renewal fee.
+            </p>
+          </div>
+        )}
 
         {message && (
           <div className="message" role="status" aria-live="polite">
@@ -296,7 +327,7 @@ function CourseContent() {
               <li>Understanding official passport procedures</li>
               <li>Checking current requirements and preparing documents</li>
               <li>Helping clients navigate applications responsibly</li>
-              <li>Client communication, service scope and transparent fees</li>
+              <li>Client communication, service scope, and transparent fees</li>
               <li>Building a trustworthy assistance service</li>
               <li>Protecting client information and avoiding common mistakes</li>
             </ul>
@@ -373,10 +404,10 @@ function CourseContent() {
 
         <p className="muted" style={{ marginTop: 24, fontSize: 12 }}>
           PassPorta is an independent guidance platform, not the Nigerian
-          Immigration Service. Official requirements, charges, appointments
+          Immigration Service. Official requirements, charges, appointments,
           and passport decisions are determined by the relevant authorities.
-          Training does not guarantee employment, income or passport approval.
-          Always check the official guidance at{" "}
+          Training does not guarantee employment, income, or passport
+          approval. Always check the official guidance at{" "}
           <a
             href="https://immigration.gov.ng/passports/"
             target="_blank"
