@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -27,97 +27,158 @@ const links = [
     description: "Your account overview",
     href: "/dashboard",
     icon: LayoutDashboard,
-    free: true,
+    requiresAccess: false,
   },
   {
     title: "Passport Agent Training",
     description: "Explore lessons and course access",
     href: "/course",
     icon: GraduationCap,
-    free: false,
+    requiresAccess: true,
   },
   {
     title: "Find Clients",
     description: "Explore client opportunities",
     href: "/course",
     icon: Users,
-    free: false,
+    requiresAccess: true,
   },
   {
     title: "My Calendar",
     description: "Appointments and reminders",
     href: "/course",
     icon: CalendarDays,
-    free: false,
+    requiresAccess: true,
   },
   {
     title: "Agent Workspace",
     description: "Organize client work and follow-ups",
     href: "/course",
     icon: BriefcaseBusiness,
-    free: false,
+    requiresAccess: true,
   },
   {
     title: "Client Checklists & Templates",
     description: "Practical guidance tools",
     href: "/course",
     icon: ClipboardCheck,
-    free: false,
+    requiresAccess: true,
   },
   {
     title: "My Progress",
     description: "Track your learning progress",
     href: "/course",
     icon: ChartNoAxesCombined,
-    free: false,
+    requiresAccess: true,
   },
   {
     title: "Help & Support",
     description: "Get help from PassPorta",
     href: "/assistance",
     icon: CircleHelp,
-    free: true,
+    requiresAccess: false,
   },
 ];
 
 export default function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
+
   const [open, setOpen] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+
+  const refreshAccess = useCallback(async () => {
+    const supabase = createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      setSignedIn(false);
+      setHasAccess(false);
+      setAccessChecked(true);
+      return;
+    }
+
+    setSignedIn(true);
+
+    const { data, error } = await supabase
+      .from("course_access")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      // Fail closed: don't claim paid access when it cannot be checked.
+      setHasAccess(false);
+      setAccessChecked(true);
+      return;
+    }
+
+    setHasAccess(Boolean(data));
+    setAccessChecked(true);
+  }, []);
 
   useEffect(() => {
     let active = true;
     const supabase = createClient();
 
-    async function checkSession() {
-      const { data } = await supabase.auth.getSession();
+    async function checkInitialSession() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      if (active) {
-        setSignedIn(Boolean(data.session));
+      if (!active) return;
+
+      if (!user) {
+        setSignedIn(false);
+        setHasAccess(false);
+        setAccessChecked(true);
+        return;
       }
+
+      setSignedIn(true);
+
+      const { data, error } = await supabase
+        .from("course_access")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!active) return;
+
+      setHasAccess(!error && Boolean(data));
+      setAccessChecked(true);
     }
 
-    void checkSession();
+    void checkInitialSession();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (active) {
-        setSignedIn(Boolean(session));
-      }
+    } = supabase.auth.onAuthStateChange(() => {
+      // Defer database access until after the auth callback completes.
+      window.setTimeout(() => {
+        if (active) void refreshAccess();
+      }, 0);
     });
 
     return () => {
       active = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [refreshAccess]);
 
   useEffect(() => {
     setOpen(false);
-  }, [pathname]);
+
+    // Refresh entitlement when navigating between pages.
+    void refreshAccess();
+  }, [pathname, refreshAccess]);
 
   useEffect(() => {
     if (!open) return;
@@ -127,6 +188,7 @@ export default function SiteHeader() {
     }
 
     window.addEventListener("keydown", handleKeyDown);
+
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
@@ -136,7 +198,12 @@ export default function SiteHeader() {
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
+
+      setSignedIn(false);
+      setHasAccess(false);
+      setAccessChecked(true);
       setOpen(false);
+
       router.push("/login");
       router.refresh();
     } finally {
@@ -187,7 +254,9 @@ export default function SiteHeader() {
                 <strong>PassPorta Menu</strong>
                 <p>
                   {signedIn
-                    ? "Your learning and agent workspace"
+                    ? hasAccess
+                      ? "Your lifetime learning access"
+                      : "Your learning and agent workspace"
                     : "Passport guidance and training"}
                 </p>
               </div>
@@ -202,11 +271,30 @@ export default function SiteHeader() {
               </button>
             </div>
 
+            {signedIn && accessChecked && hasAccess && (
+              <div
+                role="status"
+                style={{
+                  margin: "12px 0",
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  background: "#eef9f4",
+                  border: "1px solid #c8ecdc",
+                  color: "#145b42",
+                  fontWeight: 600,
+                }}
+              >
+                Lifetime Access Active
+              </div>
+            )}
+
             <div className="site-menu-links">
               {links
-                .filter((item) => signedIn || item.free)
+                .filter((item) => signedIn || !item.requiresAccess)
                 .map((item) => {
                   const Icon = item.icon;
+                  const locked =
+                    item.requiresAccess && (!accessChecked || !hasAccess);
 
                   return (
                     <Link
@@ -214,19 +302,32 @@ export default function SiteHeader() {
                       href={item.href}
                       className="site-menu-link"
                       onClick={() => setOpen(false)}
+                      aria-label={
+                        locked
+                          ? `${item.title} — course access required`
+                          : item.title
+                      }
                     >
                       <Icon className="site-menu-icon" size={21} />
 
                       <span className="site-menu-copy">
                         <strong>{item.title}</strong>
-                        <small>{item.description}</small>
+                        <small>
+                          {locked
+                            ? item.description
+                            : item.requiresAccess && hasAccess
+                              ? item.title === "Passport Agent Training"
+                                ? "Your included training materials"
+                                : item.description
+                              : item.description}
+                        </small>
                       </span>
 
-                      {item.free ? null : (
+                      {locked && (
                         <LockKeyhole
                           className="site-menu-lock"
                           size={16}
-                          aria-label="Training access may be required"
+                          aria-label="Course access required"
                         />
                       )}
                     </Link>
